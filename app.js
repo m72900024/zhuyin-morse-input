@@ -93,7 +93,8 @@ let gapTimer = null;
 function pushSymbol(sym) {          // sym: '.' or '-'
   symbols += sym;
   buf.textContent = symbols.replaceAll('.', '·').replaceAll('-', '–');
-  beep(sym === '.' ? 70 : 220);
+  // 雙重編碼：點＝高音短聲、劃＝低音長聲——音高差讓誤判在第一毫秒就聽得出來
+  if (sym === '.') beep(70, 880); else beep(220, 440);
   clearTimeout(gapTimer);
   gapTimer = setTimeout(commit, cfg.gapMs);
 }
