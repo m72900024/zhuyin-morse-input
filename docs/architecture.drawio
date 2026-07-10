@@ -1,0 +1,117 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="morse-arch-v3" name="可設定引擎架構">
+    <mxGraphModel dx="1400" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="可設定的輸入引擎 —— 通用的是引擎，個人化的是設定檔" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="330" y="18" width="800" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" value="第一個使用者：莊馥華　｜　張嘴 ＝ 點（·）　長閉眼 ＝ 劃（–）　←　使用者本人指定" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="330" y="48" width="800" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user" value="使用者" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=14;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="45" y="270" width="120" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L1" value="第一層　訊號來源（可替換）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=13;fontStyle=1;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="230" y="140" width="250" height="345" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="張嘴　→　點（·）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="250" y="180" width="210" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="長閉眼　→　劃（–）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="250" y="235" width="210" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="偵測手段（皆為既有程式碼）&#xa;唇距比 ／ 眼睛長寬比 EAR&#xa;零新相依、零自訓模型" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="250" y="292" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="其他使用者可換成：&#xa;吸／吹　·　實體單鍵長短按&#xa;雙實體鍵　·　眨左／右眼&#xa;頭部八方向" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=10;dashed=1;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="250" y="365" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L2" value="第二層　引擎（不知道訊號從哪來）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=13;fontStyle=1;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="140" width="280" height="345" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="① 訊號正規化&#xa;去彈跳 · dwell 門檻 · 濾自然眨眼" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="180" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="② symbol_decoder&#xa;點／劃 → 字元／字間隔" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="243" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="③ codebook.json　（資料，非程式碼）&#xa;國際摩斯 ／ 數碼拼音表 ／ 頻率最佳化表" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;dashed=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="580" y="306" width="240" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="④ mode_machine&#xa;打字 ／ 滑鼠 ／ 刪除 ／ 模式切換" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="374" width="240" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L3" value="第三層　輸出" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=13;fontStyle=1;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="920" y="140" width="260" height="345" as="geometry" />
+        </mxCell>
+        <mxCell id="o1" value="USB HID 鍵盤（Pico）&#xa;或 Ace Centre MorseWriter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="940" y="180" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="o2" value="Windows 內建注音 IME&#xa;注音 → 組字選字" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="248" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="o3" value="應用程式&#xa;LINE ／ Word ／ 瀏覽器" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="316" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="o4" value="語音報讀（NVDA ／ 內建）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="940" y="384" width="220" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ee1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="e1" target="e2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ee2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="e2" target="e3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ee3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="e3" target="e4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="oo1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="o1" target="o2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="oo2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="o2" target="o3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="oo3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="o3" target="o4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m1" value="動作" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=2;fontSize=11;fontColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="user" target="L1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="m2" value="點／劃事件" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=2;fontSize=11;fontColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="L1" target="L2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="m3" value="鍵盤字元" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=2;fontSize=11;fontColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="L2" target="L3"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="tone" value="側音 sidetone&#xa;瀏覽器內建 Web Audio&#xa;（不需蜂鳴器、不需 Tone.js）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="580" y="545" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tone_e" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;exitX=0.25;exitY=1;entryX=0.25;entryY=0;" edge="1" parent="1" source="L2" target="tone"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="ear" value="聽覺&#xa;唯一的回饋管道" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=11;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="35" y="535" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" value="節奏" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;dashed=1;fontSize=11;fontColor=#000000;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="tone" target="ear"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f2" value="內容報讀" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;dashed=1;fontSize=11;fontColor=#000000;exitX=1;exitY=0.5;entryX=0.5;entryY=1;" edge="1" parent="1" source="o4" target="ear">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1250" y="406" /><mxPoint x="1250" y="855" /><mxPoint x="110" y="855" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#000000;endArrow=block;endFill=1;dashed=1;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="1" source="ear" target="user"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="prof" value="profile.json　—　動作映射　·　dwell 門檻毫秒　·　碼表選擇　·　回饋開關&#xa;三層共同讀取這一份設定檔。換一個使用者 ＝ 換一份設定檔（引擎一行都不用改）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=12;fontStyle=1;dashed=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="230" y="655" width="950" height="55" as="geometry" />
+        </mxCell>
+                        
+        <mxCell id="n1" value="⚠️ 待確認：大愛影片逐字稿說「閉眼＝刪除」，&#xa;與使用者本人「長閉眼＝長音」衝突。&#xa;使用者本人的說法優先——那刪除改用什麼動作？" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=10;dashed=1;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="215" y="505" width="285" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n2" value="🔬 成本不對稱：張嘴是瞬時，長閉眼要撐住數百毫秒&#xa;→ 劃 遠貴於 點 → 高頻注音應多用「點」少用「劃」&#xa;＝ 論文題目。周盈秀 2003 談的是碼長，&#xa;這裡談的是點與劃的單位成本根本不相等。" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=10;dashed=1;align=left;spacingLeft=6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="880" y="505" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n3" value="🪦 都會變孤兒：Google Project Gameface 2025-09 封存　·　EyeCommander 2023 停　·　MorseWriter 2024 停&#xa;第五代自己也有 6 個 CDN 相依，拔掉網路線就死。&#xa;解法不是找一個「不會被拋棄的專案」，而是 fork 成自己的、把相依搬回家。" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontColor=#000000;fontSize=10;dashed=1;align=left;spacingLeft=6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="230" y="740" width="950" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="實線＝訊號流　　虛線＝回饋／設定／註解" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="35" y="885" width="360" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
