@@ -94,12 +94,21 @@ const SPEAK_NAME = {
   'ㄢ':'安','ㄣ':'恩','ㄤ':'昂','ㄥ':'鞥','ㄦ':'兒',
   'ˉ':'一聲','ˊ':'二聲','ˇ':'三聲','ˋ':'四聲','˙':'輕聲'
 };
+let zhVoice = null;
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  zhVoice = vs.find(v => v.lang === 'zh-TW') || vs.find(v => (v.lang || '').startsWith('zh')) || null;
+}
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+
 function speak(text) {
   if (!$('ckSpeak').checked || !window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-TW'; u.rate = 1.1;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
+  if (zhVoice) u.voice = zhVoice;
+  u.lang = 'zh-TW'; u.rate = 1.15;
+  // Chrome 已知 bug：cancel() 後立刻 speak() 會被吃掉——隔 30ms 再講
+  if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+  setTimeout(() => speechSynthesis.speak(u), 30);
 }
 
 // ---------- 組字引擎（小麥注音，lazy load） ----------
@@ -194,6 +203,7 @@ function commit() {
   const zy = morseToZhuyin[symbols];
   if (!zy) {
     beep(180, 200);
+    speak('錯誤');                    // 視障者不能只靠低音嗶——用講的
     setStatus('未知碼：' + symbols);
     setTimeout(() => setStatus(''), 1500);
   } else if (imeOn() && ime) {
@@ -229,6 +239,7 @@ $('btnClear').addEventListener('click', () => {
   out.textContent = ''; symbols = ''; buf.textContent = '';
   if (ime) ime.controller.reset();
 });
+$('btnSpeakTest').addEventListener('click', () => speak('報讀正常，玻，二聲'));
 $('btnCopy').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(out.textContent);
