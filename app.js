@@ -7,7 +7,7 @@
 'use strict';
 
 // ---------- 設定（localStorage 持久化） ----------
-const DEFAULTS = { mouthThr: 0.06, eyeThr: 0.14, holdMs: 400, gapMs: 1500 };
+const DEFAULTS = { mouthThr: 0.06, eyeThr: 0.14, holdMs: 400, gapMs: 1500, coolMs: 300 };
 const store = JSON.parse(localStorage.getItem('zmi-profile') || '{}');
 const cfg = Object.assign({}, DEFAULTS, store);
 function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
@@ -50,6 +50,7 @@ function setStatus(t) { $('status').textContent = t; }
 const sliders = [
   ['sMouth', 'vMouth', 'mouthThr', v => v.toFixed(3)],
   ['sEye',   'vEye',   'eyeThr',   v => v.toFixed(3)],
+  ['sCool',  'vCool',  'coolMs',   v => v + ' ms'],
   ['sHold',  'vHold',  'holdMs',   v => v + ' ms'],
   ['sGap',   'vGap',   'gapMs',    v => v + ' ms'],
 ];
@@ -66,7 +67,7 @@ for (const [sid, vid, key, fmt] of sliders) {
 }
 function drawThresholds() {
   $('thrMouth').style.left = (cfg.mouthThr / 0.15 * 100) + '%';
-  $('thrEye').style.left = (cfg.eyeThr / 0.30 * 100) + '%';
+  $('thrEye').style.left = (cfg.eyeThr / 0.40 * 100) + '%';
 }
 drawThresholds();
 
@@ -247,35 +248,67 @@ document.addEventListener('keydown', e => {
 
 // ---------- 第一層：MediaPipe FaceMesh（vendor 版） ----------
 // 嘴：上唇13/下唇14，臉高：額10/下巴152。眼（EAR）：左 159-145/33-133，右 386-374/362-263
-let mouthWasOpen = false;
+let mouthArmed = true;       // 遲滯：降回門檻七成才重新武裝
+let lastDotAt = 0;           // 冷卻：兩個點的最小間隔
 let eyeClosedSince = null;
 let dashFired = false;
+let smMouth = null, smEar = null;   // 指數平滑，濾抖動
+
+const MOUTH_PTS = [13, 14];
+const EYE_PTS = [159, 145, 33, 133, 386, 374, 362, 263];
 
 function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
+function drawOverlay(lm) {
+  const cv = $('overlay'), video = $('cam');
+  if (cv.width !== video.videoWidth) { cv.width = video.videoWidth; cv.height = video.videoHeight; }
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  for (const p of lm) ctx.fillRect(p.x * cv.width - 1, p.y * cv.height - 1, 2, 2);
+  ctx.fillStyle = '#f33';
+  for (const i of MOUTH_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 4, 0, 7); ctx.fill(); }
+  ctx.fillStyle = '#0cf';
+  for (const i of EYE_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 3, 0, 7); ctx.fill(); }
+}
+
 function onResults(res) {
-  if (!res.multiFaceLandmarks || !res.multiFaceLandmarks.length) return;
+  if (!res.multiFaceLandmarks || !res.multiFaceLandmarks.length) {
+    $('numMouth').textContent = '（未偵測到臉）';
+    return;
+  }
   const lm = res.multiFaceLandmarks[0];
+  drawOverlay(lm);
 
+  // 嘴巴：平滑 → 遲滯 → 冷卻
   const faceH = dist(lm[10], lm[152]);
-  const mouthRatio = dist(lm[13], lm[14]) / faceH;
-  const open = mouthRatio > cfg.mouthThr;
-  $('barMouth').style.width = Math.min(mouthRatio / 0.15 * 100, 100) + '%';
+  const raw = dist(lm[13], lm[14]) / faceH;
+  smMouth = smMouth === null ? raw : smMouth * 0.5 + raw * 0.5;
+  const open = smMouth > cfg.mouthThr;
+  $('barMouth').style.width = Math.min(smMouth / 0.15 * 100, 100) + '%';
+  $('numMouth').textContent = smMouth.toFixed(3) + ' / 門檻 ' + cfg.mouthThr.toFixed(3);
   $('lampMouth').classList.toggle('on', open);
-  if (open && !mouthWasOpen) pushSymbol('.');          // 張嘴瞬間＝一個點
-  mouthWasOpen = open;
+  const now = performance.now();
+  if (open && mouthArmed && now - lastDotAt >= cfg.coolMs) {
+    pushSymbol('.');
+    lastDotAt = now;
+    mouthArmed = false;                       // 要先閉回去才能再觸發
+  }
+  if (smMouth < cfg.mouthThr * 0.7) mouthArmed = true;   // 遲滯下限
 
+  // 眼睛：平滑 EAR
   const earL = dist(lm[159], lm[145]) / dist(lm[33], lm[133]);
   const earR = dist(lm[386], lm[374]) / dist(lm[362], lm[263]);
-  const ear = (earL + earR) / 2;
-  const closed = ear < cfg.eyeThr;
-  $('barEye').style.width = Math.min(ear / 0.30 * 100, 100) + '%';
+  const raw2 = (earL + earR) / 2;
+  smEar = smEar === null ? raw2 : smEar * 0.5 + raw2 * 0.5;
+  const closed = smEar < cfg.eyeThr;
+  $('barEye').style.width = Math.min(smEar / 0.40 * 100, 100) + '%';
+  $('numEye').textContent = smEar.toFixed(3) + ' / 門檻 ' + cfg.eyeThr.toFixed(3);
   $('lampEye').classList.toggle('on', closed);
-  const now = performance.now();
   if (closed) {
     if (eyeClosedSince === null) eyeClosedSince = now;
     if (!dashFired && now - eyeClosedSince >= cfg.holdMs) {
-      pushSymbol('-');                                  // 閉夠久＝一個劃
+      pushSymbol('-');
       dashFired = true;
     }
   } else {
@@ -295,7 +328,7 @@ $('btnCam').addEventListener('click', async () => {
     await video.play();
 
     const faceMesh = new FaceMesh({ locateFile: f => 'vendor/face_mesh/' + f });
-    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: false,
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true,
                           minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
     faceMesh.onResults(onResults);
 

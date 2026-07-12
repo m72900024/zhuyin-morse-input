@@ -53,22 +53,27 @@
 <main>
   <section>
     <h2>① 訊號來源</h2>
-    <video id="cam" playsinline muted></video>
+    <div style="position:relative">
+      <video id="cam" playsinline muted></video>
+      <canvas id="overlay" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transform:scaleX(-1)"></canvas>
+    </div>
     <div class="btnrow">
       <button id="btnCam">📷 開啟鏡頭</button>
       <span id="status"></span>
     </div>
-    <div class="bar-wrap"><span class="lamp" id="lampMouth"></span>嘴巴開合（唇距比）
+    <div class="bar-wrap"><span class="lamp" id="lampMouth"></span>嘴巴開合　<span id="numMouth" style="font-family:monospace"></span>
       <div class="bar"><div class="fill" id="barMouth"></div><div class="thr" id="thrMouth"></div></div>
     </div>
-    <div class="bar-wrap"><span class="lamp" id="lampEye"></span>眼睛開閉（EAR）
+    <div class="bar-wrap"><span class="lamp" id="lampEye"></span>眼睛開閉　<span id="numEye" style="font-family:monospace"></span>
       <div class="bar"><div class="fill" id="barEye"></div><div class="thr" id="thrEye"></div></div>
     </div>
 
     <label class="sl">張嘴門檻 <span id="vMouth"></span></label>
     <input type="range" id="sMouth" min="0.02" max="0.15" step="0.005">
     <label class="sl">閉眼門檻 <span id="vEye"></span></label>
-    <input type="range" id="sEye" min="0.05" max="0.25" step="0.005">
+    <input type="range" id="sEye" min="0.05" max="0.35" step="0.005">
+    <label class="sl">連續「點」最小間隔（毫秒，防張嘴連發）<span id="vCool"></span></label>
+    <input type="range" id="sCool" min="0" max="1000" step="50">
     <label class="sl">「長閉眼」需維持（毫秒）<span id="vHold"></span></label>
     <input type="range" id="sHold" min="200" max="1200" step="50">
     <label class="sl">字元間隔（毫秒，停多久算一個注音打完）<span id="vGap"></span></label>
