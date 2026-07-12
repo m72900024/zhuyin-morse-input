@@ -84,6 +84,16 @@ function beep(ms, freq = 660) {
 }
 
 // ---------- 報讀（系統 TTS） ----------
+// 注音符號的標準讀音字（直接丟「ㄋ」給 TTS 不一定念得出來，用讀音字最穩）
+const SPEAK_NAME = {
+  'ㄅ':'玻','ㄆ':'坡','ㄇ':'摸','ㄈ':'佛','ㄉ':'得','ㄊ':'特','ㄋ':'訥','ㄌ':'勒',
+  'ㄍ':'哥','ㄎ':'科','ㄏ':'喝','ㄐ':'基','ㄑ':'欺','ㄒ':'希',
+  'ㄓ':'知','ㄔ':'吃','ㄕ':'詩','ㄖ':'日','ㄗ':'資','ㄘ':'雌','ㄙ':'思',
+  'ㄧ':'衣','ㄨ':'烏','ㄩ':'迂',
+  'ㄚ':'啊','ㄛ':'喔','ㄜ':'鵝','ㄝ':'耶','ㄞ':'哀','ㄟ':'欸','ㄠ':'凹','ㄡ':'歐',
+  'ㄢ':'安','ㄣ':'恩','ㄤ':'昂','ㄥ':'鞥','ㄦ':'兒',
+  'ˉ':'一聲','ˊ':'二聲','ˇ':'三聲','ˋ':'四聲','˙':'輕聲'
+};
 function speak(text) {
   if (!$('ckSpeak').checked || !window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(text);
@@ -188,9 +198,10 @@ function commit() {
     setTimeout(() => setStatus(''), 1500);
   } else if (imeOn() && ime) {
     sendKeyToIME(zhuyinToKey[zy]);   // 餵大千鍵位給引擎，引擎自己組字
+    speak(SPEAK_NAME[zy] || zy);     // 每個注音進去都念出來（她的協定第 3 條）
   } else {
     out.textContent += zy;
-    speak(zy);
+    speak(SPEAK_NAME[zy] || zy);
   }
   symbols = '';
   buf.textContent = '';
