@@ -15,6 +15,7 @@ function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
 // ---------- 碼表 ----------
 let morseToZhuyin = {};   // ".-"  -> "ㄇ"
 let zhuyinToKey = {};     // "ㄇ" -> "a"（大千鍵位，餵組字引擎用）
+let morseToControl = {};  // "----" -> {action:"Backspace", name:"退格"}
 fetch('codebook/zhuyin-morse-dachen-draft.json')
   .then(r => r.json())
   .then(cb => {
@@ -25,13 +26,17 @@ fetch('codebook/zhuyin-morse-dachen-draft.json')
     for (const [tone, v] of Object.entries(cb.tones)) {
       if (v.morse) { morseToZhuyin[v.morse] = tone; zhuyinToKey[tone] = v.key; }
     }
+    for (const [name, v] of Object.entries(cb.controls || {})) {
+      morseToControl[v.morse] = { action: v.action, name };
+    }
     buildRefTable(cb);
   })
   .catch(e => { setStatus('碼表載入失敗：' + e.message); });
 
 function buildRefTable(cb) {
   const items = Object.entries(cb.codes).map(([zy, v]) => [zy, v.morse])
-    .concat(Object.entries(cb.tones).filter(([, v]) => v.morse).map(([t, v]) => [t, v.morse]));
+    .concat(Object.entries(cb.tones).filter(([, v]) => v.morse).map(([t, v]) => [t, v.morse]))
+    .concat(Object.entries(cb.controls || {}).map(([n, v]) => [n, v.morse]));
   let html = '<table class="ref"><tr>';
   items.forEach(([zy, m], i) => {
     html += `<td><b>${zy}</b> ${m.replaceAll('.', '·').replaceAll('-', '–')}</td>`;
@@ -200,6 +205,15 @@ function pushSymbol(sym) {          // '.' or '-'
 }
 function commit() {
   if (!symbols) return;
+  const ctrl = morseToControl[symbols];
+  if (ctrl) {
+    symbols = ''; buf.textContent = '';
+    speak(ctrl.name);                 // 念「退格」「送出」讓她知道控制碼生效
+    if (ctrl.action === 'Enter') enterKey();
+    else if (ctrl.action === 'Backspace') backspace();
+    else if (ctrl.action === 'ClearAll') clearAll();
+    return;
+  }
   const zy = morseToZhuyin[symbols];
   if (!zy) {
     beep(180, 200);
@@ -235,10 +249,11 @@ $('btnDot').addEventListener('click', () => pushSymbol('.'));
 $('btnDash').addEventListener('click', () => pushSymbol('-'));
 $('btnBack').addEventListener('click', backspace);
 $('btnEnter').addEventListener('click', enterKey);
-$('btnClear').addEventListener('click', () => {
+function clearAll() {
   out.textContent = ''; symbols = ''; buf.textContent = '';
   if (ime) ime.controller.reset();
-});
+}
+$('btnClear').addEventListener('click', clearAll);
 $('btnSpeakTest').addEventListener('click', () => speak('報讀正常，玻，二聲'));
 $('btnCopy').addEventListener('click', async () => {
   try {
