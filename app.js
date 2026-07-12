@@ -1,7 +1,7 @@
 /* 注音摩斯輸入引擎（測試版）
  * 第一層：張嘴＝點、長閉眼＝劃（可用 F/J 鍵或畫面按鈕代替）
  * 第二層：點劃 → codebook JSON → 注音
- * 第三層：頁面顯示 ＋ 側音 ＋ 報讀
+ * 第三層：組字模式（小麥注音 McBopomofoWeb 引擎，MIT）→ 中文字 → 複製
  * 相依全部 vendor 在 repo 內，離線可跑。
  */
 'use strict';
@@ -13,14 +13,18 @@ const cfg = Object.assign({}, DEFAULTS, store);
 function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
 
 // ---------- 碼表 ----------
-let morseToZhuyin = {};   // ".-" -> "ㄇ"
-let codebookMeta = null;
+let morseToZhuyin = {};   // ".-"  -> "ㄇ"
+let zhuyinToKey = {};     // "ㄇ" -> "a"（大千鍵位，餵組字引擎用）
 fetch('codebook/zhuyin-morse-dachen-draft.json')
   .then(r => r.json())
   .then(cb => {
-    codebookMeta = cb._meta;
-    for (const [zy, v] of Object.entries(cb.codes)) morseToZhuyin[v.morse] = zy;
-    for (const [tone, v] of Object.entries(cb.tones)) if (v.morse) morseToZhuyin[v.morse] = tone;
+    for (const [zy, v] of Object.entries(cb.codes)) {
+      morseToZhuyin[v.morse] = zy;
+      zhuyinToKey[zy] = v.key;
+    }
+    for (const [tone, v] of Object.entries(cb.tones)) {
+      if (v.morse) { morseToZhuyin[v.morse] = tone; zhuyinToKey[tone] = v.key; }
+    }
     buildRefTable(cb);
   })
   .catch(e => { setStatus('碼表載入失敗：' + e.message); });
@@ -66,7 +70,7 @@ function drawThresholds() {
 }
 drawThresholds();
 
-// ---------- 側音（Web Audio，不用任何外部函式庫） ----------
+// ---------- 側音（Web Audio） ----------
 let audioCtx = null;
 function beep(ms, freq = 660) {
   if (!$('ckTone').checked) return;
@@ -78,7 +82,7 @@ function beep(ms, freq = 660) {
   o.start(); o.stop(audioCtx.currentTime + ms / 1000);
 }
 
-// ---------- 報讀（實驗性：交給系統 TTS） ----------
+// ---------- 報讀（系統 TTS） ----------
 function speak(text) {
   if (!$('ckSpeak').checked || !window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(text);
@@ -87,10 +91,86 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-// ---------- 解碼器（第二層：只認識點劃事件，不知道訊號從哪來） ----------
+// ---------- 組字引擎（小麥注音，lazy load） ----------
+let ime = null;               // { controller }
+let imeLoading = null;
+let candidatesVisible = false;
+
+const CODE_MAP = { ' ': 'Space', ',': 'Comma', '.': 'Period', ';': 'Semicolon', '/': 'Slash', '-': 'Minus' };
+function codeFor(key) {
+  if (CODE_MAP[key]) return CODE_MAP[key];
+  if (/^[0-9]$/.test(key)) return 'Digit' + key;
+  if (/^[a-z]$/i.test(key)) return 'Key' + key.toUpperCase();
+  return key;
+}
+function sendKeyToIME(key, codeName) {
+  if (!ime) return false;
+  const ev = new KeyboardEvent('keydown', { key, code: codeName || codeFor(key), bubbles: false });
+  return ime.controller.keyEvent(ev);
+}
+
+function ensureIME() {
+  if (ime) return Promise.resolve(ime);
+  if (imeLoading) return imeLoading;
+  setStatus('組字引擎載入中…（約 5MB，僅第一次）');
+  imeLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'vendor/mcbopomofo/bundle.js';
+    s.onload = () => {
+      try {
+        const { InputController } = window.mcbopomofo;
+        const ui = {
+          reset() {
+            $('mcbBuffer').textContent = '';
+            $('mcbCands').innerHTML = '';
+            candidatesVisible = false;
+          },
+          commitString(str) {
+            out.textContent += str;
+            speak(str);
+          },
+          update(stateJson) {
+            const st = JSON.parse(stateJson);
+            const text = (st.composingBuffer || []).map(i => i.text).join('');
+            $('mcbBuffer').textContent = text;
+            const cands = st.candidates || [];
+            candidatesVisible = cands.length > 0;
+            if (candidatesVisible) {
+              let h = '';
+              for (const c of cands) {
+                h += `<span class="cand${c.selected ? ' sel' : ''}"><b>${c.keyCap}</b> ${c.candidate.displayedText}</span> `;
+              }
+              if (st.candidatePageCount > 1) h += `<small>${st.candidatePageIndex + 1}/${st.candidatePageCount} 頁</small>`;
+              $('mcbCands').innerHTML = h;
+            } else {
+              $('mcbCands').innerHTML = '';
+            }
+          },
+        };
+        const controller = new InputController(ui);
+        controller.setLanguageCode('zh-TW');
+        if (typeof controller.setUserVerticalCandidates === 'function') controller.setUserVerticalCandidates(false);
+        controller.setOnError(() => beep(180, 200));
+        ime = { controller };
+        setStatus('組字引擎就緒 ✓');
+        setTimeout(() => setStatus(''), 1500);
+        resolve(ime);
+      } catch (e) { setStatus('組字引擎初始化失敗：' + e.message); reject(e); }
+    };
+    s.onerror = () => { setStatus('組字引擎下載失敗'); reject(new Error('load fail')); };
+    document.body.appendChild(s);
+  });
+  return imeLoading;
+}
+function imeOn() { return $('ckIME').checked; }
+$('ckIME').addEventListener('change', () => { if (imeOn()) ensureIME(); });
+if (document.readyState !== 'loading') { if (imeOn()) ensureIME(); }
+else document.addEventListener('DOMContentLoaded', () => { if (imeOn()) ensureIME(); });
+
+// ---------- 解碼器（第二層：只認識點劃事件） ----------
 let symbols = '';
 let gapTimer = null;
-function pushSymbol(sym) {          // sym: '.' or '-'
+function pushSymbol(sym) {          // '.' or '-'
   symbols += sym;
   buf.textContent = symbols.replaceAll('.', '·').replaceAll('-', '–');
   // 雙重編碼：點＝高音短聲、劃＝低音長聲——音高差讓誤判在第一毫秒就聽得出來
@@ -101,35 +181,71 @@ function pushSymbol(sym) {          // sym: '.' or '-'
 function commit() {
   if (!symbols) return;
   const zy = morseToZhuyin[symbols];
-  if (zy) {
-    out.textContent += zy;
-    speak(zy);
-  } else {
-    beep(180, 200);                 // 低音＝未知碼
+  if (!zy) {
+    beep(180, 200);
     setStatus('未知碼：' + symbols);
     setTimeout(() => setStatus(''), 1500);
+  } else if (imeOn() && ime) {
+    sendKeyToIME(zhuyinToKey[zy]);   // 餵大千鍵位給引擎，引擎自己組字
+  } else {
+    out.textContent += zy;
+    speak(zy);
   }
   symbols = '';
   buf.textContent = '';
 }
 function backspace() {
   if (symbols) { symbols = ''; buf.textContent = ''; clearTimeout(gapTimer); return; }
+  if (imeOn() && ime && ($('mcbBuffer').textContent || candidatesVisible)) {
+    sendKeyToIME('Backspace', 'Backspace');
+    return;
+  }
   out.textContent = out.textContent.slice(0, -1);
+}
+function enterKey() {
+  if (imeOn() && ime && ($('mcbBuffer').textContent || candidatesVisible)) {
+    sendKeyToIME('Enter', 'Enter');
+  }
 }
 
 // ---------- 手動輸入（按鈕＋鍵盤） ----------
 $('btnDot').addEventListener('click', () => pushSymbol('.'));
 $('btnDash').addEventListener('click', () => pushSymbol('-'));
 $('btnBack').addEventListener('click', backspace);
-$('btnClear').addEventListener('click', () => { out.textContent = ''; symbols = ''; buf.textContent = ''; });
-document.addEventListener('keydown', e => {
-  if (e.repeat) return;
-  if (e.key === 'f' || e.key === 'F') pushSymbol('.');
-  else if (e.key === 'j' || e.key === 'J') pushSymbol('-');
-  else if (e.key === 'Backspace') { e.preventDefault(); backspace(); }
+$('btnEnter').addEventListener('click', enterKey);
+$('btnClear').addEventListener('click', () => {
+  out.textContent = ''; symbols = ''; buf.textContent = '';
+  if (ime) ime.controller.reset();
+});
+$('btnCopy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(out.textContent);
+    setStatus('已複製 ✓ 到 LINE / Word 貼上即可');
+    setTimeout(() => setStatus(''), 2500);
+  } catch (e) { setStatus('複製失敗：' + e.message); }
 });
 
-// ---------- 第一層：MediaPipe FaceMesh（vendor 版，離線可跑） ----------
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  if (e.key === 'f' || e.key === 'F') { pushSymbol('.'); return; }
+  if (e.key === 'j' || e.key === 'J') { pushSymbol('-'); return; }
+  if (e.key === 'Backspace') { e.preventDefault(); backspace(); return; }
+  if (e.key === 'Enter') { enterKey(); return; }
+  // 組字中，讓少數控制鍵直通引擎（候選字換頁／選字）
+  if (imeOn() && ime && ($('mcbBuffer').textContent || candidatesVisible)) {
+    if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) {
+      e.preventDefault(); sendKeyToIME(e.key, e.key); return;
+    }
+    if (candidatesVisible && /^[1-9]$/.test(e.key)) {
+      e.preventDefault(); sendKeyToIME(e.key); return;
+    }
+    if (candidatesVisible && e.key === ' ') {
+      e.preventDefault(); sendKeyToIME(' ', 'Space'); return;
+    }
+  }
+});
+
+// ---------- 第一層：MediaPipe FaceMesh（vendor 版） ----------
 // 嘴：上唇13/下唇14，臉高：額10/下巴152。眼（EAR）：左 159-145/33-133，右 386-374/362-263
 let mouthWasOpen = false;
 let eyeClosedSince = null;
@@ -141,7 +257,6 @@ function onResults(res) {
   if (!res.multiFaceLandmarks || !res.multiFaceLandmarks.length) return;
   const lm = res.multiFaceLandmarks[0];
 
-  // 嘴巴
   const faceH = dist(lm[10], lm[152]);
   const mouthRatio = dist(lm[13], lm[14]) / faceH;
   const open = mouthRatio > cfg.mouthThr;
@@ -150,7 +265,6 @@ function onResults(res) {
   if (open && !mouthWasOpen) pushSymbol('.');          // 張嘴瞬間＝一個點
   mouthWasOpen = open;
 
-  // 眼睛（雙眼平均 EAR）
   const earL = dist(lm[159], lm[145]) / dist(lm[33], lm[133]);
   const earR = dist(lm[386], lm[374]) / dist(lm[362], lm[263]);
   const ear = (earL + earR) / 2;
@@ -162,7 +276,7 @@ function onResults(res) {
     if (eyeClosedSince === null) eyeClosedSince = now;
     if (!dashFired && now - eyeClosedSince >= cfg.holdMs) {
       pushSymbol('-');                                  // 閉夠久＝一個劃
-      dashFired = true;                                 // 需張眼後才能再打
+      dashFired = true;
     }
   } else {
     eyeClosedSince = null;
@@ -170,7 +284,6 @@ function onResults(res) {
   }
 }
 
-// 鏡頭啟動
 $('btnCam').addEventListener('click', async () => {
   try {
     setStatus('鏡頭啟動中…');

@@ -1,0 +1,5 @@
+McBopomofoWeb（小麥注音網頁版）組字引擎 bundle
+來源：https://github.com/openvanilla/McBopomofoWeb（MIT License）
+取得方式：https://openvanilla.github.io/McBopomofoWeb/bundle.js（官方 demo 編譯產物）
+取得日期：2026-07-12（上游最後 push 2026-07-09）
+全域介面：window.mcbopomofo → { InputController, Service, BopomofoKeyboardLayout, ... }

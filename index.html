@@ -41,6 +41,8 @@
   table.ref { font-size:.78rem; border-collapse:collapse; width:100%; margin-top:6px; }
   table.ref td { border:1px solid #ddd; padding:2px 4px; white-space:nowrap; }
   #status { font-size:.85rem; color:#06c; min-height:1.2em; }
+  .cand { display:inline-block; border:1px solid #999; padding:1px 6px; margin:1px; background:#f4f4ff; }
+  .cand.sel { background:#cce; border-color:#33c; }
 </style>
 </head>
 <body>
@@ -80,18 +82,24 @@
 
   <section>
     <h2>② 輸出</h2>
-    <div>目前碼：<span id="buf"></span></div>
+    <div>目前碼：<span id="buf"></span>　<span style="color:#888" id="mcbBuffer"></span></div>
+    <div id="mcbCands" style="min-height:1.4em;font-size:1.1rem"></div>
     <div id="out"></div>
     <div class="btnrow">
       <button class="big" id="btnDot">點 ·</button>
       <button class="big" id="btnDash">劃 –</button>
+      <button id="btnEnter">⏎ 送出</button>
       <button id="btnBack">⌫ 退一格</button>
       <button id="btnClear">清空</button>
+      <button id="btnCopy">📋 複製全部</button>
       <label style="font-size:.9rem;align-self:center">
         <input type="checkbox" id="ckTone" checked> 側音
       </label>
       <label style="font-size:.9rem;align-self:center">
         <input type="checkbox" id="ckSpeak" checked> 報讀（實驗）
+      </label>
+      <label style="font-size:.9rem;align-self:center">
+        <input type="checkbox" id="ckIME" checked> 組字（小麥注音引擎）
       </label>
     </div>
 
@@ -99,7 +107,12 @@
       ⚠️ 本頁使用的碼表為「注音→大千鍵盤鍵位→國際摩斯碼」的<b>暫定推導版</b>，
       不是任何使用者實際使用的碼表，也不是標準。它自帶已知缺陷
       （例如 ㄢ ＝ <code>-----</code> 連續五個劃）——保留此缺陷正是為了後續研究比較。
-      一聲（ˉ）在此版無對應碼（大千鍵盤上是空白鍵），暫不輸出。
+      一聲（ˉ）：大千鍵盤原為空白鍵、摩斯無字面對應，本專案自訂 ··–– 補上（已於碼表標註）。
+    </div>
+    <div class="hint">
+      組字模式：打完「注音＋聲調」引擎自動組字（智慧選字），⏎ 送出後進輸出區；
+      候選字出現時可用數字鍵 1–9 選、方向鍵換頁。
+      組字引擎：<a href="https://github.com/openvanilla/McBopomofoWeb">小麥注音 McBopomofoWeb</a>（MIT，已 vendor 於本 repo）。
     </div>
 
     <details style="margin-top:10px">
