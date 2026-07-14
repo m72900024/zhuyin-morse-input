@@ -296,60 +296,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ---------- 自動校正（語音引導馥華，媽媽零操作） ----------
-let camReady = false;
-let calibrating = false;
-let curMouth = 0, curEye = 0;   // onResults 每幀更新
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-async function collect(ms, pick) {
-  const arr = []; const t0 = performance.now();
-  while (performance.now() - t0 < ms) { arr.push(pick()); await sleep(50); }
-  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-}
-function syncSliders() {
-  for (const [sid, vid, key, fmt] of sliders) {
-    $(sid).value = cfg[key]; $(vid).textContent = fmt(cfg[key]);
-  }
-  drawThresholds();
-}
-function calShow(t) { $('calBig').textContent = t; }
-
-async function autoCalibrate() {
-  if (!camReady) { setStatus('請先按「開啟鏡頭」'); speak('請先打開鏡頭'); return; }
-  if (calibrating) return;
-  calibrating = true;
-  $('calBig').style.display = 'flex';
-  try {
-    calShow('準備校正，請聽指示');
-    speak('開始校正，請聽我的指示'); await sleep(2800);
-    calShow('請「張開嘴巴」，保持住');
-    speak('請張開嘴巴，保持住'); await sleep(1600);
-    const mOpen = await collect(1500, () => curMouth);
-    calShow('請「閉上嘴巴」，放鬆');
-    speak('請閉上嘴巴，放鬆'); await sleep(1600);
-    const mClose = await collect(1500, () => curMouth);
-    calShow('請「閉上眼睛」，保持住');
-    speak('請閉上眼睛，保持住'); await sleep(1600);
-    const eClose = await collect(1500, () => curEye);
-    calShow('請「張開眼睛」');
-    speak('請張開眼睛'); await sleep(1600);
-    const eOpen = await collect(1500, () => curEye);
-
-    let ok = true;
-    if (mOpen > mClose * 1.15) cfg.mouthThr = (mOpen + mClose) / 2; else ok = false;
-    if (eOpen > eClose * 1.15) cfg.eyeThr = (eOpen + eClose) / 2; else ok = false;
-    saveCfg(); syncSliders();
-    if (ok) { calShow('✓ 校正完成，可以開始了'); speak('校正完成，可以開始打字了'); }
-    else { calShow('校正沒抓到動作，請再試一次'); speak('沒有抓到動作，請再按一次校正'); }
-    await sleep(2800);
-  } finally {
-    calibrating = false;
-    $('calBig').style.display = 'none';
-  }
-}
-$('btnAutoCal').addEventListener('click', autoCalibrate);
-
 // ---------- 第一層：MediaPipe FaceMesh（vendor 版） ----------
 // 嘴：上唇13/下唇14，臉高：額10/下巴152。眼（EAR）：左 159-145/33-133，右 386-374/362-263
 let mouthArmed = true;       // 遲滯：降回門檻七成才重新武裝
@@ -388,7 +334,6 @@ function onResults(res) {
   const faceH = dist(lm[10], lm[152]);
   const raw = dist(lm[13], lm[14]) / faceH;
   smMouth = smMouth === null ? raw : smMouth * 0.5 + raw * 0.5;
-  curMouth = smMouth;
   const open = smMouth > cfg.mouthThr;
   $('barMouth').style.width = Math.min(smMouth / 0.15 * 100, 100) + '%';
   $('numMouth').textContent = smMouth.toFixed(3) + ' / 門檻 ' + cfg.mouthThr.toFixed(3);
@@ -406,7 +351,6 @@ function onResults(res) {
   const earR = dist(lm[386], lm[374]) / dist(lm[362], lm[263]);
   const raw2 = (earL + earR) / 2;
   smEar = smEar === null ? raw2 : smEar * 0.5 + raw2 * 0.5;
-  curEye = smEar;
   const closed = smEar < cfg.eyeThr;
   $('barEye').style.width = Math.min(smEar / 0.40 * 100, 100) + '%';
   $('numEye').textContent = smEar.toFixed(3) + ' / 門檻 ' + cfg.eyeThr.toFixed(3);
@@ -449,7 +393,6 @@ $('btnCam').addEventListener('click', async () => {
     }
     loop();
     setStatus('鏡頭運作中 ✓');
-    camReady = true;
     $('btnCam').disabled = true;
   } catch (e) {
     setStatus('鏡頭無法啟動：' + e.message + '（仍可用 F/J 鍵或按鈕測試）');

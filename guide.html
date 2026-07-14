@@ -4,87 +4,100 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>使用說明</title>
+<title>個案測試說明 — 注音摩斯輸入</title>
 <style>
   body { font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
-         max-width:640px; margin:0 auto; padding:20px; color:#111;
-         font-size:1.15rem; line-height:1.9; }
-  h1 { font-size:1.7rem; text-align:center; }
-  .lead { background:#eef7ff; border:1px solid #6aa; padding:14px; border-radius:8px;
-          text-align:center; font-size:1.2rem; }
-  .step { border:2px solid #0a6; border-radius:10px; padding:6px 18px 14px; margin:18px 0; }
-  .num { display:inline-block; background:#0a6; color:#fff; font-size:1.3rem; font-weight:bold;
-         width:2rem; height:2rem; line-height:2rem; text-align:center; border-radius:50%;
-         margin:10px 8px 0 0; }
-  .step h2 { display:inline; font-size:1.3rem; }
-  .green { background:#0a6; color:#fff; padding:2px 10px; border-radius:5px; font-weight:bold; white-space:nowrap; }
-  .go { display:block; background:#0a6; color:#fff; text-decoration:none; text-align:center;
-        padding:16px; font-size:1.4rem; border-radius:10px; margin:16px 0; }
-  .sound { background:#fffef5; border:1px dashed #a80; border-radius:8px; padding:12px 18px; }
-  .sound li { margin:8px 0; }
-  .trouble { background:#fdf0f0; border:1px solid #d99; border-radius:8px; padding:12px 18px; }
-  b.hl { color:#c00; }
+         max-width:720px; margin:0 auto; padding:18px; line-height:1.75; color:#111; }
+  h1 { font-size:1.5rem; border-bottom:3px solid #111; padding-bottom:8px; }
+  h2 { font-size:1.2rem; margin-top:28px; background:#111; color:#fff; padding:4px 10px; }
+  .key { background:#eef7ff; border:1px solid #6aa; padding:10px 14px; margin:12px 0; }
+  .step { border-left:4px solid #0a6; padding:2px 12px; margin:10px 0; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; }
+  td,th { border:1px solid #999; padding:6px 8px; text-align:left; }
+  th { background:#f0f0f0; }
+  code { background:#f4f4f4; padding:1px 5px; font-size:1.05em; letter-spacing:.1em; }
+  .big { font-size:1.15rem; }
+  .ear { background:#fffef5; border:1px dashed #a80; padding:10px 14px; }
+  a.start { display:inline-block; background:#0a6; color:#fff; text-decoration:none;
+            padding:12px 24px; font-size:1.2rem; border-radius:6px; margin:10px 0; }
+  .warn { color:#a00; font-weight:bold; }
 </style>
 </head>
 <body>
 
-<h1>怎麼用</h1>
+<h1>注音摩斯輸入 — 測試說明</h1>
 
-<div class="lead">
-  馥華用<b>嘴巴和眼睛</b>打字。<br>
-  您在旁邊陪她，跟著下面做就好。<br>
-  她<b>聽聲音</b>就知道打對了沒有。
+<div class="key big">
+  <span class="warn">這份說明是給「陪測的協助者」看的。</span><br>
+  馥華看不見螢幕，她全程<b>靠耳朵</b>操作。<br>
+  協助者的兩個任務：<b>①幫她把門檻調準　②觀察並記錄狀況</b>。
 </div>
 
-<a class="go" href="./index.html">▶ 開始（點這裡）</a>
+<a class="start" href="./index.html">▶ 開啟輸入程式</a>
+<p style="font-size:.85rem;color:#666">網址：m72900024.github.io/zhuyin-morse-input/</p>
 
-<div class="step">
-  <span class="num">1</span><h2>開鏡頭</h2>
-  <p>按 <b>「📷 開啟鏡頭」</b>，跳出來的視窗選 <b>「允許」</b>。<br>
-  讓馥華的臉出現在畫面裡。</p>
+<h2>動作怎麼對應</h2>
+<table>
+  <tr><th>身體動作</th><th>意義</th><th>聽到的聲音</th></tr>
+  <tr><td><b>張嘴</b></td><td>點（·）</td><td>高音「嗶」（短）</td></tr>
+  <tr><td><b>長閉眼</b>（閉住約半秒）</td><td>劃（–）</td><td>低音「嗶——」（長）</td></tr>
+</table>
+<p>也可以先用鍵盤代測：<code>F</code>＝點、<code>J</code>＝劃。</p>
+
+<h2>測試前：協助者先做兩件事</h2>
+
+<div class="step"><b>1. 開鏡頭</b><br>
+按「📷 開啟鏡頭」，允許權限。臉上會出現網格點——<b>嘴唇是紅點、眼睛是青點</b>。</div>
+
+<div class="step"><b>2. 校正門檻（最重要）</b><br>
+畫面左邊有兩條偵測條，會顯示即時數字。
+<ul>
+  <li>請馥華<b>張嘴</b>，看「嘴巴」那條的數字跳多高；閉著時多低。把紅線（門檻）調到中間。</li>
+  <li>請馥華<b>閉眼</b>，看「眼睛」那條的數字掉多低；睜開時多高。同樣把紅線調到中間。</li>
+</ul>
+原則：<b>動作時數字會越線、平常不會越線</b>。設定會自動記住。</div>
+
+<h2>怎麼打一個字</h2>
+<div class="step big">
+  ① 打注音（張嘴／閉眼）→ 每個注音打完會<b>念出讀音</b>（例：ㄋ→「訥」）<br>
+  ② 打聲調（見下表）<br>
+  ③ 螢幕上出現<span style="color:#888;font-weight:bold">灰色的字</span>（電腦在組字）<br>
+  ④ 打<b>送出 <code>·–·–·</code></b>（點劃點劃點）→ 字落進黃色框、<b>念出中文字</b><br>
+  ⑤ 打錯 → <b>退格 <code>––––</code></b>（四次長閉眼）或 <b>全部刪除 <code>–··––</code></b>
 </div>
 
-<div class="step">
-  <span class="num">2</span><h2>按 <span class="green">🎯 自動校正</span>，跟著聲音做</h2>
-  <p>按下綠色的「自動校正」。<br>
-  電腦會<b>用聲音</b>一步步說：</p>
-  <p style="margin-left:1em">
-  「請張開嘴巴」→ 讓馥華張嘴<br>
-  「請閉上嘴巴」→ 讓她閉起來<br>
-  「請閉上眼睛」→ 讓她閉眼<br>
-  「請張開眼睛」→ 讓她睜開</p>
-  <p>聽到 <b>「校正完成」</b> 就好了。<br>
-  <b class="hl">這一步做完，才會準。</b></p>
-</div>
+<h2>聲調（先打注音，最後打聲調）</h2>
+<table>
+  <tr><th>聲調</th><th>碼</th><th>動作</th></tr>
+  <tr><td>一聲</td><td><code>··––</code></td><td>張 張 閉 閉</td></tr>
+  <tr><td>二聲</td><td><code>–····</code></td><td>閉 張 張 張 張</td></tr>
+  <tr><td>三聲</td><td><code>···––</code></td><td>張 張 張 閉 閉</td></tr>
+  <tr><td>四聲</td><td><code>····–</code></td><td>張 張 張 張 閉</td></tr>
+  <tr><td>輕聲</td><td><code>––···</code></td><td>閉 閉 張 張 張</td></tr>
+</table>
+<p style="font-size:.85rem;color:#666">完整注音碼表在程式頁面的「碼表速查」裡。</p>
 
-<div class="step">
-  <span class="num">3</span><h2>開始打字</h2>
-  <p><b>張開嘴巴</b> ＝ 一下（會「嗶」高音）<br>
-  <b>閉眼睛一下下</b> ＝ 一長音（會「嗶——」低音）</p>
-  <p>照著馥華記得的方式打。<br>
-  每打完一個注音，電腦會<b>念出來</b>給她聽。</p>
+<h2>馥華靠這些聲音判斷（她不用看螢幕）</h2>
+<div class="ear big">
+  🔊 <b>嗶</b>（高／低）＝ 我按到了一個點／劃<br>
+  🔊 念出<b>注音讀音</b>（「訥」「衣」）＝ 我這個注音<b>拼對了</b><br>
+  🔊 念出「<b>錯誤</b>」＝ 我拼錯了，要重來<br>
+  🔊 念出<b>中文字</b>（「你」）＝ 送出成功、電腦懂了
 </div>
+<p>測試前先按一下畫面上的「<b>🔈試</b>」，確定喇叭有聲音、中文念得出來。</p>
 
-<div class="step">
-  <span class="num">4</span><h2>馥華靠聲音判斷</h2>
-  <ul class="sound">
-    <li>🔊 <b>「嗶」</b> ＝ 有按到</li>
-    <li>🔊 念出<b>注音的音</b>（像「訥」「衣」）＝ <b>對了</b></li>
-    <li>🔊 念出 <b>「錯誤」</b> ＝ 打錯了，重來</li>
-    <li>🔊 念出<b>一個字</b>（像「你」）＝ 送出成功</li>
-  </ul>
-  <p>先按畫面上的 <b>「🔈試」</b>，確定喇叭有聲音。</p>
-</div>
+<h2>請幫忙記下這幾件事（研究要用）</h2>
+<ul>
+  <li><b>閉眼</b>認得出來嗎？閉眼時「眼睛」那條數字有沒有掉下去？</li>
+  <li><b>張嘴</b>會不會不小心連發？（可調「連續點最小間隔」）</li>
+  <li>念注音、念中文的<b>聲音清不清楚</b>？速度會不會太快或太慢？</li>
+  <li>做起來<b>累不累</b>？哪個動作最吃力？（尤其閉眼）</li>
+  <li>「停多久算一個注音打完」會不會太快或太慢？（可調「字元間隔」）</li>
+</ul>
 
-<div class="trouble">
-  <b>卡住了怎麼辦？</b><br>
-  • 打不出來 → 再按一次 <span class="green">🎯 自動校正</span><br>
-  • 還是怪怪的 → 把網頁<b>重新整理</b>，從第 1 步再來<br>
-  • 都不行 → 打電話給老師
-</div>
-
-<p style="text-align:center;color:#999;margin-top:28px;font-size:.95rem">
-這是測試版，先試試看順不順、累不累就好。
+<p style="margin-top:30px;font-size:.85rem;color:#888">
+這是測試版，用的是暫定碼表（不是馥華原本熟悉的那一套）。
+目的是先確認「張嘴＋閉眼」這個方式順不順，聲音回饋夠不夠。
 </p>
 
 </body>
