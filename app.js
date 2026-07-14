@@ -33,16 +33,29 @@ fetch('codebook/zhuyin-morse-dachen-draft.json')
   })
   .catch(e => { setStatus('碼表載入失敗：' + e.message); });
 
-function buildRefTable(cb) {
-  const items = Object.entries(cb.codes).map(([zy, v]) => [zy, v.morse])
-    .concat(Object.entries(cb.tones).filter(([, v]) => v.morse).map(([t, v]) => [t, v.morse]))
-    .concat(Object.entries(cb.controls || {}).map(([n, v]) => [n, v.morse]));
+function pretty(m) { return m.replaceAll('.', '·').replaceAll('-', '–'); }
+function morseAction(m) {   // ·––→「張、閉、閉」
+  return [...m].map(c => c === '.' ? '張' : '閉').join('、');
+}
+function gridOf(pairs, showAction) {
   let html = '<table class="ref"><tr>';
-  items.forEach(([zy, m], i) => {
-    html += `<td><b>${zy}</b> ${m.replaceAll('.', '·').replaceAll('-', '–')}</td>`;
+  pairs.forEach(([name, m], i) => {
+    const act = showAction ? `<br><small style="color:#888">${morseAction(m)}</small>` : '';
+    html += `<td><b>${name}</b> ${pretty(m)}${act}</td>`;
     if ((i + 1) % 4 === 0) html += '</tr><tr>';
   });
-  html += '</tr></table>';
+  return html + '</tr></table>';
+}
+function buildRefTable(cb) {
+  const zhuyin = Object.entries(cb.codes).map(([zy, v]) => [zy, v.morse]);
+  const tones = Object.entries(cb.tones).filter(([, v]) => v.morse).map(([t, v]) => [t, v.morse]);
+  const controls = Object.entries(cb.controls || {}).map(([n, v]) => [n, v.morse]);
+  const html =
+    '<h3 class="refh">注音符號（37）</h3>' + gridOf(zhuyin, false) +
+    '<h3 class="refh">聲調（先打注音，最後打聲調）</h3>' + gridOf(tones, true) +
+    '<p class="refnote">⚠️ 聲調用的是數字鍵的碼，每個都要 4–5 個動作、且多為「閉眼」（最費力）。' +
+    '一聲 ··–– 為本專案自訂（大千鍵盤一聲＝空白鍵，摩斯無對應）。這正是本研究要最佳化的重點。</p>' +
+    '<h3 class="refh">控制碼</h3>' + gridOf(controls, true);
   document.getElementById('refTable').innerHTML = html;
 }
 

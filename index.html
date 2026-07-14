@@ -43,6 +43,11 @@
   #status { font-size:.85rem; color:#06c; min-height:1.2em; }
   .cand { display:inline-block; border:1px solid #999; padding:1px 6px; margin:1px; background:#f4f4ff; }
   .cand.sel { background:#cce; border-color:#33c; }
+  .flow { background:#eef7ff; border:1px solid #6aa; padding:8px 12px; font-size:.86rem;
+          line-height:1.7; margin-top:10px; }
+  .flow ol { margin:6px 0 4px; padding-left:1.4em; }
+  .refh { font-size:.9rem; margin:12px 0 4px; border-bottom:1px solid #ccc; }
+  .refnote { font-size:.78rem; color:#a60; background:#fff6e5; padding:6px 8px; margin:6px 0; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -87,8 +92,9 @@
 
   <section>
     <h2>② 輸出</h2>
-    <div>目前碼：<span id="buf"></span>　<span style="color:#888" id="mcbBuffer"></span></div>
+    <div><b>目前碼：</b><span id="buf"></span>　<span style="color:#888" id="mcbBuffer" title="組字中（灰色）"></span></div>
     <div id="mcbCands" style="min-height:1.4em;font-size:1.1rem"></div>
+    <div style="font-size:.8rem;color:#666;margin:2px 0">↓ 送出後的字落在這裡（黃色框）</div>
     <div id="out"></div>
     <div class="btnrow">
       <button class="big" id="btnDot">點 ·</button>
@@ -115,9 +121,15 @@
       （例如 ㄢ ＝ <code>-----</code> 連續五個劃）——保留此缺陷正是為了後續研究比較。
       一聲（ˉ）：大千鍵盤原為空白鍵、摩斯無字面對應，本專案自訂 ··–– 補上（已於碼表標註）。
     </div>
-    <div class="hint">
-      組字模式：打完「注音＋聲調」引擎自動組字（智慧選字），⏎ 送出後進輸出區；
-      候選字出現時可用數字鍵 1–9 選、方向鍵換頁。
+    <div class="flow">
+      <b>輸入流程</b>
+      <ol>
+        <li><b>打注音</b>（張嘴＝點、長閉眼＝劃）→ 每個注音打完念出讀音（例：ㄋ→「訥」）</li>
+        <li><b>打聲調</b>（一聲 ··–– / 二聲 –···· / 三聲 ···–– / 四聲 ····– / 輕聲 ––···）</li>
+        <li>引擎自動組字，字先出現在 <span style="color:#888;font-weight:bold">灰色（組字中）</span></li>
+        <li><b>送出＝ ·–·–·</b>（點劃點劃點）→ 字落進 <span style="background:#fffef5;border:1px dashed #999;padding:0 4px">黃色框</span>，並念出中文字</li>
+        <li>打錯：<b>退格＝ ––––</b>（四長音）／<b>全部刪除＝ –··––</b></li>
+      </ol>
       組字引擎：<a href="https://github.com/openvanilla/McBopomofoWeb">小麥注音 McBopomofoWeb</a>（MIT，已 vendor 於本 repo）。
     </div>
 
