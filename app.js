@@ -16,7 +16,7 @@ function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
 let morseToZhuyin = {};   // ".-"  -> "ㄇ"
 let zhuyinToKey = {};     // "ㄇ" -> "a"（大千鍵位，餵組字引擎用）
 let morseToControl = {};  // "----" -> {action:"Backspace", name:"退格"}
-fetch('codebook/zhuyin-morse-dachen-draft.json')
+fetch('codebook/codebook-fuhua.json')
   .then(r => r.json())
   .then(cb => {
     for (const [zy, v] of Object.entries(cb.codes)) {
@@ -27,7 +27,7 @@ fetch('codebook/zhuyin-morse-dachen-draft.json')
       if (v.morse) { morseToZhuyin[v.morse] = tone; zhuyinToKey[tone] = v.key; }
     }
     for (const [name, v] of Object.entries(cb.controls || {})) {
-      morseToControl[v.morse] = { action: v.action, name };
+      morseToControl[v.morse] = { action: v.action, name, char: v.char };
     }
     buildRefTable(cb);
   })
@@ -53,8 +53,7 @@ function buildRefTable(cb) {
   const html =
     '<h3 class="refh">注音符號（37）</h3>' + gridOf(zhuyin, false) +
     '<h3 class="refh">聲調（先打注音，最後打聲調）</h3>' + gridOf(tones, true) +
-    '<p class="refnote">⚠️ 聲調用的是數字鍵的碼，每個都要 4–5 個動作、且多為「閉眼」（最費力）。' +
-    '一聲 ··–– 為本專案自訂（大千鍵盤一聲＝空白鍵，摩斯無對應）。這正是本研究要最佳化的重點。</p>' +
+    '<p class="refnote">此為馥華<b>實際使用</b>的碼表（瑪利亞雲端團隊＋育瑋整理,2026-07）。' + '長短式:點=張嘴、劃=長閉眼。一聲=空白鍵( <code>······</code> 六點,此系統自訂),二~四聲/輕聲=數字鍵碼。</p>' +
     '<h3 class="refh">控制碼</h3>' + gridOf(controls, true);
   document.getElementById('refTable').innerHTML = html;
 }
@@ -221,10 +220,7 @@ function commit() {
   const ctrl = morseToControl[symbols];
   if (ctrl) {
     symbols = ''; buf.textContent = '';
-    speak(ctrl.name);                 // 念「退格」「送出」讓她知道控制碼生效
-    if (ctrl.action === 'Enter') enterKey();
-    else if (ctrl.action === 'Backspace') backspace();
-    else if (ctrl.action === 'ClearAll') clearAll();
+    dispatchControl(ctrl);
     return;
   }
   const zy = morseToZhuyin[symbols];
@@ -254,6 +250,21 @@ function backspace() {
 function enterKey() {
   if (imeOn() && ime && ($('mcbBuffer').textContent || candidatesVisible)) {
     sendKeyToIME('Enter', 'Enter');
+  }
+}
+
+function dispatchControl(ctrl) {
+  switch (ctrl.action) {
+    case 'Submit': enterKey(); break;
+    case 'Backspace': speak('退格'); backspace(); break;
+    case 'ClearAll': speak('清空'); clearAll(); break;
+    case 'CancelComposing': speak('取消'); if (ime) ime.controller.reset(); break;
+    case 'SpeakAll': speak(out.textContent || '沒有內容'); break;
+    case 'StopSpeak': if (window.speechSynthesis) speechSynthesis.cancel(); break;
+    case 'Punct': if (ctrl.char) { out.textContent += ctrl.char; speak(ctrl.char); } break;
+    case 'ToggleMode': speak('中英切換,尚未支援'); break;
+    case 'ToggleCase': speak('大小寫切換,尚未支援'); break;
+    default: speak(ctrl.name || '');
   }
 }
 
