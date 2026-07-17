@@ -5,6 +5,7 @@
  * 相依全部 vendor 在 repo 內，離線可跑。
  */
 'use strict';
+const APP_VERSION = 'v2026-07-17';
 
 // ---------- 設定（localStorage 持久化） ----------
 const DEFAULTS = { mouthThr: 0.06, eyeThr: 0.14, holdMs: 400, gapMs: 1500, coolMs: 300 };
@@ -16,7 +17,7 @@ function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
 let morseToZhuyin = {};   // ".-"  -> "ㄇ"
 let zhuyinToKey = {};     // "ㄇ" -> "a"（大千鍵位，餵組字引擎用）
 let morseToControl = {};  // "----" -> {action:"Backspace", name:"退格"}
-fetch('codebook/codebook-fuhua.json')
+fetch('codebook/codebook-fuhua.json?v=' + APP_VERSION)
   .then(r => r.json())
   .then(cb => {
     for (const [zy, v] of Object.entries(cb.codes)) {
@@ -320,6 +321,7 @@ const EYE_PTS = [159, 145, 33, 133, 386, 374, 362, 263];
 
 function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
+let eyeClosedNow = false;   // 給 overlay 用:閉眼時眼睛標記變紅
 function drawOverlay(lm) {
   const cv = $('overlay'), video = $('cam');
   if (cv.width !== video.videoWidth) { cv.width = video.videoWidth; cv.height = video.videoHeight; }
@@ -328,9 +330,9 @@ function drawOverlay(lm) {
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   for (const p of lm) ctx.fillRect(p.x * cv.width - 1, p.y * cv.height - 1, 2, 2);
   ctx.fillStyle = '#f33';
-  for (const i of MOUTH_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 4, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#0cf';
-  for (const i of EYE_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 3, 0, 7); ctx.fill(); }
+  for (const i of MOUTH_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 4, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = eyeClosedNow ? '#f33' : '#fd0';   // 平常黃色,閉眼變紅=有抓到
+  for (const i of EYE_PTS) { const p = lm[i]; ctx.beginPath(); ctx.arc(p.x * cv.width, p.y * cv.height, 5, 0, Math.PI * 2); ctx.fill(); }
 }
 
 function onResults(res) {
@@ -363,6 +365,7 @@ function onResults(res) {
   const raw2 = (earL + earR) / 2;
   smEar = smEar === null ? raw2 : smEar * 0.5 + raw2 * 0.5;
   const closed = smEar < cfg.eyeThr;
+  eyeClosedNow = closed;
   $('barEye').style.width = Math.min(smEar / 0.40 * 100, 100) + '%';
   $('numEye').textContent = smEar.toFixed(3) + ' / 門檻 ' + cfg.eyeThr.toFixed(3);
   $('lampEye').classList.toggle('on', closed);
@@ -378,7 +381,21 @@ function onResults(res) {
   }
 }
 
+function unlockAudio() {
+  // iOS 規定:聲音必須在使用者手勢內啟動。開鏡頭這一下就是手勢,順便解鎖側音與報讀。
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance('聲音已開啟');
+      u.lang = 'zh-TW'; if (zhVoice) u.voice = zhVoice;
+      speechSynthesis.speak(u);
+    }
+  } catch (e) { /* 解鎖失敗不擋鏡頭 */ }
+}
+
 $('btnCam').addEventListener('click', async () => {
+  unlockAudio();
   try {
     setStatus('鏡頭啟動中…');
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -394,11 +411,21 @@ $('btnCam').addEventListener('click', async () => {
     faceMesh.onResults(onResults);
 
     let busy = false;
+    let loopErrShown = false;
     async function loop() {
       if (!busy && video.readyState >= 2) {
         busy = true;
-        await faceMesh.send({ image: video });
-        busy = false;
+        try {
+          await faceMesh.send({ image: video });
+        } catch (err) {
+          if (!loopErrShown) {           // 只報一次,避免洗版
+            loopErrShown = true;
+            setStatus('⚠️ 偵測發生錯誤：' + (err && err.message ? err.message : err));
+            $('status').style.color = '#c00';
+          }
+        } finally {
+          busy = false;                  // 出錯也不讓迴圈卡死
+        }
       }
       requestAnimationFrame(loop);
     }
