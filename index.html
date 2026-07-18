@@ -53,7 +53,7 @@
 <body>
 <header>
   <h1>注音摩斯輸入引擎 <small>測試版</small></h1>
-  <span style="float:right;font-size:.75rem;color:#999">v2026-07-17</span>
+  <span style="float:right;font-size:.75rem;color:#999">v2026-07-18</span>
   <div class="sub">張嘴＝點（·）　長閉眼＝劃（–）　｜　退格 ·–·–　清空 –··––　送出 ·–·–·(暫)　｜　鍵盤測試：F＝點、J＝劃　｜　碼表：馥華真實版</div>
 </header>
 <main>
@@ -117,19 +117,18 @@
     </div>
 
     <div class="warn">
-      ⚠️ 本頁使用的碼表為「注音→大千鍵盤鍵位→國際摩斯碼」的<b>暫定推導版</b>，
-      不是任何使用者實際使用的碼表，也不是標準。它自帶已知缺陷
-      （例如 ㄢ ＝ <code>-----</code> 連續五個劃）——保留此缺陷正是為了後續研究比較。
-      一聲（ˉ）：大千鍵盤原為空白鍵、摩斯無字面對應，本專案自訂 ··–– 補上（已於碼表標註）。
+      ✅ 本頁使用<b>馥華實際使用的碼表</b>（瑪利亞雲端團隊＋育瑋整理，2026-07）。
+      一聲＝<code>······</code>（六個點，此系統以空白鍵自訂）。
+      「送出」原系統無此鍵，暫以 <code>·–·–·</code> 代替，待確認原系統送出方式。
     </div>
     <div class="flow">
       <b>輸入流程</b>
       <ol>
         <li><b>打注音</b>（張嘴＝點、長閉眼＝劃）→ 每個注音打完念出讀音（例：ㄋ→「訥」）</li>
-        <li><b>打聲調</b>（一聲 ··–– / 二聲 –···· / 三聲 ···–– / 四聲 ····– / 輕聲 ––···）</li>
+        <li><b>打聲調</b>（一聲 ······ / 二聲 –···· / 三聲 ···–– / 四聲 ····– / 輕聲 ––···）</li>
         <li>引擎自動組字，字先出現在 <span style="color:#888;font-weight:bold">灰色（組字中）</span></li>
         <li><b>送出＝ ·–·–·</b>（點劃點劃點）→ 字落進 <span style="background:#fffef5;border:1px dashed #999;padding:0 4px">黃色框</span>，並念出中文字</li>
-        <li>打錯：<b>退格＝ ––––</b>（四長音）／<b>全部刪除＝ –··––</b></li>
+        <li>打錯：<b>退格＝ ·–·–</b>／<b>清空＝ –··––</b>／<b>取消拼字＝ ··–··</b></li>
       </ol>
       組字引擎：<a href="https://github.com/openvanilla/McBopomofoWeb">小麥注音 McBopomofoWeb</a>（MIT，已 vendor 於本 repo）。
     </div>

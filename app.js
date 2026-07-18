@@ -5,7 +5,7 @@
  * 相依全部 vendor 在 repo 內，離線可跑。
  */
 'use strict';
-const APP_VERSION = 'v2026-07-17';
+const APP_VERSION = 'v2026-07-18';
 
 // ---------- 設定（localStorage 持久化） ----------
 const DEFAULTS = { mouthThr: 0.06, eyeThr: 0.14, holdMs: 400, gapMs: 1500, coolMs: 300 };
@@ -16,7 +16,7 @@ function saveCfg() { localStorage.setItem('zmi-profile', JSON.stringify(cfg)); }
 // ---------- 碼表 ----------
 let morseToZhuyin = {};   // ".-"  -> "ㄇ"
 let zhuyinToKey = {};     // "ㄇ" -> "a"（大千鍵位，餵組字引擎用）
-let morseToControl = {};  // "----" -> {action:"Backspace", name:"退格"}
+let morseToControl = {};  // ".-.-" -> {action:"Backspace", name:"退格"}
 fetch('codebook/codebook-fuhua.json?v=' + APP_VERSION)
   .then(r => r.json())
   .then(cb => {
@@ -234,7 +234,8 @@ function commit() {
     sendKeyToIME(zhuyinToKey[zy]);   // 餵大千鍵位給引擎，引擎自己組字
     speak(SPEAK_NAME[zy] || zy);     // 每個注音進去都念出來（她的協定第 3 條）
   } else {
-    out.textContent += zy;
+    const TONE_MARK = { '一聲':'ˉ','二聲':'ˊ','三聲':'ˇ','四聲':'ˋ','輕聲':'˙' };
+    out.textContent += TONE_MARK[zy] || zy;
     speak(SPEAK_NAME[zy] || zy);
   }
   symbols = '';
